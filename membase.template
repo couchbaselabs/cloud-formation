@@ -6,7 +6,6 @@
       "Type" : "String"
     },
     "MembasePackageURL" : {
-      "NoEcho": "true",
       "Description" : "URL to Membase software package",
       "Type" : "String",
       "Default" : "http://packages.couchbase.com/releases/1.7.0/membase-server-community_x86_1.7.0.rpm"
@@ -16,14 +15,14 @@
       "Description" : "Password for REST Administrator API and web-console interface",
       "Type" : "String"
     },
-    "MaxRAMPerServer" : {
+    "RAMPerServer" : {
       "Description" : "Maximum RAM quota in MB for each node in the cluster",
       "Type" : "Number",
       "Default" : "500",
       "MinValue" : "200"
     },
-    "MaxRAMForDefaultBucket" : {
-      "Description" : "Maximum RAM quota in MB for the default bucket. Should be <= MaxRAMPerServer",
+    "RAMForDefaultBucket" : {
+      "Description" : "Maximum RAM quota in MB for the default bucket. Should be <= RAMPerServer",
       "Type" : "Number",
       "Default" : "500",
       "MinValue" : "0"
@@ -59,9 +58,16 @@
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
-              " --cluster-init-username=Administrator",
-              " --cluster-init-password=", { "Ref" : "RESTPassword" },
-              " --cluster-init-ramsize=", { "Ref" : "MaxRAMPerServer" },"\n",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1","\n",
             "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
                                                            "\"Reason\" : \"Membase node is ready\",",
                                                            "\"UniqueId\" : \"membase\",",
