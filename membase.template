@@ -1,5 +1,6 @@
 {
  "AWSTemplateFormatVersion" : "2010-09-09",
+ "Description" : "Template for Membase Server on EC2",
  "Parameters" : {
     "KeyName" : {
       "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
