@@ -95,13 +95,16 @@
               "    --bucket-password=",
               "    --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
               "    --bucket-replica=1","\n",
-              "  curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
-                                                               "\"Reason\" : \"Membase0 node is ready\",",
-                                                               "\"UniqueId\" : \"membase\",",
-                                                               "\"Data\" : \"Done\"}' ",
-                      "\"", {"Ref" : "WaitForMembase0WaitHandle"}, "\"\n",
               
             "fi","\n"
+            
+              ,
+              "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
+                                                             "\"Reason\" : \"Membase0 node is ready\",",
+                                                             "\"UniqueId\" : \"membase\",",
+                                                             "\"Data\" : \"Done\"}' ",
+                    "\"", {"Ref" : "WaitForMembase0WaitHandle"}, "\"\n"
+            
         ]]}}
       }
       
@@ -145,6 +148,7 @@
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
+            
         ]]}}
       }
       
@@ -191,6 +195,7 @@
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
+            
         ]]}}
       }
       
@@ -237,6 +242,7 @@
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
+            
         ]]}}
       }
       
@@ -283,6 +289,7 @@
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
+            
         ]]}}
       }
       
@@ -329,6 +336,7 @@
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
+            
         ]]}}
       }
       

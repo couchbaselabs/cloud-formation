@@ -95,11 +95,6 @@
               "    --bucket-password=",
               "    --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
               "    --bucket-replica=1","\n",
-              "  curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
-                                                               "\"Reason\" : \"Membase0 node is ready\",",
-                                                               "\"UniqueId\" : \"membase\",",
-                                                               "\"Data\" : \"Done\"}' ",
-                      "\"", {"Ref" : "WaitForMembase0WaitHandle"}, "\"\n",
               <% else %>
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
@@ -107,6 +102,14 @@
               "    --server-add=`hostname -i`:8091","\n",
               <% end %>
             "fi","\n"
+            <% if i == 0 %>
+              ,
+              "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
+                                                             "\"Reason\" : \"Membase0 node is ready\",",
+                                                             "\"UniqueId\" : \"membase\",",
+                                                             "\"Data\" : \"Done\"}' ",
+                    "\"", {"Ref" : "WaitForMembase0WaitHandle"}, "\"\n"
+            <% end %>
         ]]}}
       }
       <% if i > 0 %>
