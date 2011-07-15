@@ -74,26 +74,34 @@
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "MembasePackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
-            "sleep 5","\n"
-            
-              ,
-              "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
-              "  --cluster-init-username=Administrator",
-              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
-              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
-              "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
-              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "  --bucket=default",
-              "  --bucket-type=membase",
-              "  --bucket-password=",
-              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
-              "  --bucket-replica=1","\n",
-              "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
-                                                             "\"Reason\" : \"Membase0 node is ready\",",
-                                                             "\"UniqueId\" : \"membase\",",
-                                                             "\"Data\" : \"Done\"}' ",
-                    "\"", {"Ref" : "WaitForMembase0WaitHandle"}, "\"\n"
-            
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "    --cluster-init-username=Administrator",
+              "    --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "    --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+              "  /opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    --bucket=default",
+              "    --bucket-type=membase",
+              "    --bucket-password=",
+              "    --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "    --bucket-replica=1","\n",
+              "  curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
+                                                               "\"Reason\" : \"Membase0 node is ready\",",
+                                                               "\"UniqueId\" : \"membase\",",
+                                                               "\"Data\" : \"Done\"}' ",
+                      "\"", {"Ref" : "WaitForMembase0WaitHandle"}, "\"\n",
+              
+            "fi","\n"
         ]]}}
       }
       
@@ -121,8 +129,22 @@
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "MembasePackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
-            "sleep 5","\n"
-            
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
         ]]}}
       }
       
@@ -153,8 +175,22 @@
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "MembasePackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
-            "sleep 5","\n"
-            
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
         ]]}}
       }
       
@@ -185,8 +221,22 @@
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "MembasePackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
-            "sleep 5","\n"
-            
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
         ]]}}
       }
       
@@ -217,8 +267,22 @@
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "MembasePackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
-            "sleep 5","\n"
-            
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
         ]]}}
       }
       
@@ -249,8 +313,22 @@
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "MembasePackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
-            "sleep 5","\n"
-            
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
         ]]}}
       }
       
