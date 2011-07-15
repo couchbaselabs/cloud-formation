@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'erb'
+
+# Usage:
+#   gen-pack some-template.erb 1
+#   gen-pack some-template.erb 5
+#
+erb_path      = ARGV[0]
+num_instances = ARGV[1].to_i
+
+print ERB.new(IO.read(erb_path)).result(binding)
+print "\n"

@@ -1,0 +1,2820 @@
+{
+ "AWSTemplateFormatVersion" : "2010-09-09",
+ "Description" : "Template for Membase Server on EC2",
+ "Parameters" : {
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "Type" : "String"
+    },
+    "MembasePackageURL" : {
+      "Description" : "URL to Membase software package",
+      "Type" : "String",
+      "Default" : "http://packages.couchbase.com/releases/1.7.0/membase-server-community_x86_1.7.0.rpm"
+    },
+    "RESTPassword" : {
+      "NoEcho": "true",
+      "Description" : "Password for REST Administrator API and web-console interface",
+      "Type" : "String"
+    },
+    "RAMPerServer" : {
+      "Description" : "Maximum RAM quota in MB for each node in the cluster",
+      "Type" : "Number",
+      "Default" : "500",
+      "MinValue" : "200"
+    },
+    "RAMForDefaultBucket" : {
+      "Description" : "Maximum RAM quota in MB for the default bucket. Should be <= RAMPerServer",
+      "Type" : "Number",
+      "Default" : "500",
+      "MinValue" : "0"
+    },
+    "ExistingClusterHostPort" : {
+      "Description" : "Optional 'host:port', if you want to join new node(s) to an existing cluster node",
+      "Type" : "String",
+      "Default" : "host:port"
+    }
+  },
+
+  "Mappings" : {
+    "RegionMap" : {
+      "us-east-1" : {"AMI" : "ami-8c1fece5"},
+      "us-west-1" : {"AMI" : "ami-3bc9997e"},
+      "eu-west-1" : {"AMI" : "ami-47cefa33"},
+      "ap-southeast-1" : {"AMI" : "ami-6af08e38"},
+      "ap-northeast-1" : {"AMI" : "ami-300ca731"}
+    }
+  },
+
+  "Resources" : {
+   
+    "Membase0" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+              ,"\n",
+              "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
+                                                             "\"Reason\" : \"Membase node is ready\",",
+                                                             "\"UniqueId\" : \"membase\",",
+                                                             "\"Data\" : \"Done\"}' ",
+                    "\"", {"Ref" : "WaitForInstanceWaitHandle"},"\"\n" ]]}}
+            
+      }
+    },
+   
+    "Membase1" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase2" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase3" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase4" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase5" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase6" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase7" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase8" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase9" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase10" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase11" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase12" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase13" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase14" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase15" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase16" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase17" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase18" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase19" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase20" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase21" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase22" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase23" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase24" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase25" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase26" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase27" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase28" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase29" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase30" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase31" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase32" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase33" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase34" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase35" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase36" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase37" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase38" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase39" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase40" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase41" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase42" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase43" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase44" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase45" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase46" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase47" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase48" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase49" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase50" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase51" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase52" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase53" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase54" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase55" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase56" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase57" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase58" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase59" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase60" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase61" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase62" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase63" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase64" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase65" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase66" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase67" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase68" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase69" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase70" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase71" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase72" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase73" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase74" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase75" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase76" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase77" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase78" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase79" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase80" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase81" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase82" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase83" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase84" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase85" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase86" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase87" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase88" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase89" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase90" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase91" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase92" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase93" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase94" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase95" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase96" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase97" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase98" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+    "Membase99" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  --cluster-init-username=Administrator",
+              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "  --bucket=default",
+              "  --bucket-type=membase",
+              "  --bucket-password=",
+              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "  --bucket-replica=1"
+            
+      }
+    },
+   
+
+    "InstanceSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" :
+          "Enable SSH access via port 22, web access to 8091, membase/memcached protocol access to 11211 and 11210, and erlang access",
+        "SecurityGroupIngress" : [ {
+          "IpProtocol" : "tcp",
+          "FromPort" : "22",
+          "ToPort" : "22",
+          "CidrIp" : "0.0.0.0/0"
+        }, {
+          "IpProtocol" : "tcp",
+          "FromPort" : "8091",
+          "ToPort" : "8091",
+          "CidrIp" : "0.0.0.0/0"
+        }, {
+          "IpProtocol" : "tcp",
+          "FromPort" : "11211",
+          "ToPort" : "11211",
+          "CidrIp" : "0.0.0.0/0"
+        }, {
+          "IpProtocol" : "tcp",
+          "FromPort" : "11210",
+          "ToPort" : "11210",
+          "CidrIp" : "0.0.0.0/0"
+        }, {
+          "IpProtocol" : "tcp",
+          "FromPort" : "4369",
+          "ToPort" : "4369",
+          "CidrIp" : "0.0.0.0/0"
+        }, {
+          "IpProtocol" : "tcp",
+          "FromPort" : "21100",
+          "ToPort" : "21299",
+          "CidrIp" : "0.0.0.0/0"
+        } ]
+      }
+    },
+
+    "WaitForInstanceWaitHandle" : {
+      "Type" : "AWS::CloudFormation::WaitConditionHandle",
+      "Properties" : {
+      }
+    },
+
+    "WaitForInstance" : {
+      "Type" : "AWS::CloudFormation::WaitCondition",
+      "DependsOn" : "Membase0",
+      "Properties" : {
+        "Handle" : {"Ref" : "WaitForInstanceWaitHandle"},
+        "Timeout" : "600"
+      }
+    }
+  },
+
+  "Outputs" : {
+    "RESTWebConsoleURL" : {
+      "Description" : "The URL for the newly created Membase node(s)",
+      "Value" : { "Fn::Join" : ["", [ "http://", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] }, ":8091" ]]}
+    }
+  }
+}
+
