@@ -6,6 +6,11 @@
       "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
       "Type" : "String"
     },
+    "InstanceType": {
+      "Default": "m1.small",
+      "Description": "Type of EC2 instances for the Membase servers",
+      "Type": "String"
+    },
     "MembasePackageURL" : {
       "Description" : "URL to Membase software package",
       "Type" : "String",
@@ -29,24 +34,36 @@
       "MinValue" : "0"
     },
     "ExistingClusterHostPort" : {
-      "Description" : "Optional 'host:port', if you want to join new node(s) to an existing cluster node",
+      "Description" : "Optional 'host:port', if you want to join new node(s) to an existing cluster node.  Leave as 'host:port' to not join to an existing cluster",
       "Type" : "String",
       "Default" : "host:port"
     },
     "UserTag" : {
-      "Description" : "Optional tag value, to help track your CloudFormation launched instances",
+      "Description" : "Optional tag value, to help track your launched EC2 instances",
       "Type" : "String",
       "Default" : "none"
     }
   },
 
   "Mappings" : {
-    "RegionMap" : {
-      "us-east-1" : {"AMI" : "ami-8c1fece5"},
-      "us-west-1" : {"AMI" : "ami-3bc9997e"},
-      "eu-west-1" : {"AMI" : "ami-47cefa33"},
-      "ap-southeast-1" : {"AMI" : "ami-6af08e38"},
-      "ap-northeast-1" : {"AMI" : "ami-300ca731"}
+    "AWSInstanceType2Arch" : {
+      "t1.micro"    : { "Arch" : "64" },
+      "m1.small"    : { "Arch" : "32" },
+      "m1.large"    : { "Arch" : "64" },
+      "m1.xlarge"   : { "Arch" : "64" },
+      "m2.xlarge"   : { "Arch" : "64" },
+      "m2.2xlarge"  : { "Arch" : "64" },
+      "m2.4xlarge"  : { "Arch" : "64" },
+      "c1.medium"   : { "Arch" : "32" },
+      "c1.xlarge"   : { "Arch" : "64" },
+      "cc1.4xlarge" : { "Arch" : "64" }
+    },
+    "AWSRegionArch2AMI" : {
+      "us-east-1" : { "32" : "ami-8c1fece5", "64" : "ami-8e1fece7" },
+      "us-west-1" : { "32" : "ami-3bc9997e", "64" : "ami-c7c99982" },
+      "eu-west-1" : { "32" : "ami-47cefa33", "64" : "ami-45cefa31" },
+      "ap-southeast-1" : { "32" : "ami-6af08e38", "64" : "ami-6ef08e3c" },
+      "ap-northeast-1" : { "32" : "ami-300ca731", "64" : "ami-2e0ca72f" }
     }
   },
 
@@ -57,7 +74,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-0" ]]}
@@ -115,7 +149,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-1" ]]}
@@ -162,7 +213,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-2" ]]}
@@ -209,7 +277,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-3" ]]}
@@ -256,7 +341,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-4" ]]}
@@ -303,7 +405,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-5" ]]}
@@ -350,7 +469,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-6" ]]}
@@ -397,7 +533,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-7" ]]}
@@ -444,7 +597,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-8" ]]}
@@ -491,7 +661,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-9" ]]}
@@ -538,7 +725,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-10" ]]}
@@ -585,7 +789,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-11" ]]}
@@ -632,7 +853,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-12" ]]}
@@ -679,7 +917,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-13" ]]}
@@ -726,7 +981,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-14" ]]}
@@ -773,7 +1045,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-15" ]]}
@@ -820,7 +1109,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-16" ]]}
@@ -867,7 +1173,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-17" ]]}
@@ -914,7 +1237,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-18" ]]}
@@ -961,7 +1301,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-19" ]]}
@@ -1008,7 +1365,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-20" ]]}
@@ -1055,7 +1429,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-21" ]]}
@@ -1102,7 +1493,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-22" ]]}
@@ -1149,7 +1557,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-23" ]]}
@@ -1196,7 +1621,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-24" ]]}
@@ -1243,7 +1685,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-25" ]]}
@@ -1290,7 +1749,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-26" ]]}
@@ -1337,7 +1813,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-27" ]]}
@@ -1384,7 +1877,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-28" ]]}
@@ -1431,7 +1941,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-29" ]]}
@@ -1478,7 +2005,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-30" ]]}
@@ -1525,7 +2069,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-31" ]]}
@@ -1572,7 +2133,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-32" ]]}
@@ -1619,7 +2197,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-33" ]]}
@@ -1666,7 +2261,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-34" ]]}
@@ -1713,7 +2325,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-35" ]]}
@@ -1760,7 +2389,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-36" ]]}
@@ -1807,7 +2453,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-37" ]]}
@@ -1854,7 +2517,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-38" ]]}
@@ -1901,7 +2581,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-39" ]]}
@@ -1948,7 +2645,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-40" ]]}
@@ -1995,7 +2709,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-41" ]]}
@@ -2042,7 +2773,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-42" ]]}
@@ -2089,7 +2837,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-43" ]]}
@@ -2136,7 +2901,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-44" ]]}
@@ -2183,7 +2965,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-45" ]]}
@@ -2230,7 +3029,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-46" ]]}
@@ -2277,7 +3093,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-47" ]]}
@@ -2324,7 +3157,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-48" ]]}
@@ -2371,7 +3221,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-49" ]]}
@@ -2418,7 +3285,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-50" ]]}
@@ -2465,7 +3349,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-51" ]]}
@@ -2512,7 +3413,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-52" ]]}
@@ -2559,7 +3477,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-53" ]]}
@@ -2606,7 +3541,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-54" ]]}
@@ -2653,7 +3605,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-55" ]]}
@@ -2700,7 +3669,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-56" ]]}
@@ -2747,7 +3733,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-57" ]]}
@@ -2794,7 +3797,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-58" ]]}
@@ -2841,7 +3861,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-59" ]]}
@@ -2888,7 +3925,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-60" ]]}
@@ -2935,7 +3989,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-61" ]]}
@@ -2982,7 +4053,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-62" ]]}
@@ -3029,7 +4117,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-63" ]]}
@@ -3076,7 +4181,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-64" ]]}
@@ -3123,7 +4245,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-65" ]]}
@@ -3170,7 +4309,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-66" ]]}
@@ -3217,7 +4373,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-67" ]]}
@@ -3264,7 +4437,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-68" ]]}
@@ -3311,7 +4501,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-69" ]]}
@@ -3358,7 +4565,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-70" ]]}
@@ -3405,7 +4629,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-71" ]]}
@@ -3452,7 +4693,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-72" ]]}
@@ -3499,7 +4757,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-73" ]]}
@@ -3546,7 +4821,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-74" ]]}
@@ -3593,7 +4885,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-75" ]]}
@@ -3640,7 +4949,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-76" ]]}
@@ -3687,7 +5013,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-77" ]]}
@@ -3734,7 +5077,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-78" ]]}
@@ -3781,7 +5141,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-79" ]]}
@@ -3828,7 +5205,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-80" ]]}
@@ -3875,7 +5269,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-81" ]]}
@@ -3922,7 +5333,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-82" ]]}
@@ -3969,7 +5397,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-83" ]]}
@@ -4016,7 +5461,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-84" ]]}
@@ -4063,7 +5525,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-85" ]]}
@@ -4110,7 +5589,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-86" ]]}
@@ -4157,7 +5653,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-87" ]]}
@@ -4204,7 +5717,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-88" ]]}
@@ -4251,7 +5781,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-89" ]]}
@@ -4298,7 +5845,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-90" ]]}
@@ -4345,7 +5909,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-91" ]]}
@@ -4392,7 +5973,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-92" ]]}
@@ -4439,7 +6037,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-93" ]]}
@@ -4486,7 +6101,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-94" ]]}
@@ -4533,7 +6165,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-95" ]]}
@@ -4580,7 +6229,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-96" ]]}
@@ -4627,7 +6293,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-97" ]]}
@@ -4674,7 +6357,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-98" ]]}
@@ -4721,7 +6421,24 @@
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
-        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-99" ]]}
