@@ -17,13 +17,13 @@
       "Type" : "String"
     },
     "RAMPerServer" : {
-      "Description" : "Maximum RAM quota in MB for each node in the cluster",
+      "Description" : "RAM quota in MB for each node in the cluster",
       "Type" : "Number",
       "Default" : "500",
       "MinValue" : "200"
     },
     "RAMForDefaultBucket" : {
-      "Description" : "Maximum RAM quota in MB for the default bucket. Should be <= RAMPerServer",
+      "Description" : "RAM quota in MB for each node for the default bucket. Should be <= RAMPerServer",
       "Type" : "Number",
       "Default" : "500",
       "MinValue" : "0"
@@ -32,6 +32,11 @@
       "Description" : "Optional 'host:port', if you want to join new node(s) to an existing cluster node",
       "Type" : "String",
       "Default" : "host:port"
+    },
+    "UserTag" : {
+      "Description" : "Optional tag value, to help track your CloudFormation launched instances",
+      "Type" : "String",
+      "Default" : "none"
     }
   },
 
@@ -53,32 +58,45 @@
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
         "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
-        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-0" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "MembasePackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
-            "sleep 5","\n",
-            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
+            "sleep 5","\n"
+            
+              ,
+              "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
               "  --cluster-init-username=Administrator",
               "  --cluster-init-password=", { "Ref" : "RESTPassword" },
               "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
-            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
               "  -u Administrator -p ", { "Ref" : "RESTPassword" },
               "  --bucket=default",
               "  --bucket-type=membase",
               "  --bucket-password=",
               "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
-              "  --bucket-replica=1"
-            
-              ,"\n",
+              "  --bucket-replica=1","\n",
               "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
-                                                             "\"Reason\" : \"Membase node is ready\",",
+                                                             "\"Reason\" : \"Membase0 node is ready\",",
                                                              "\"UniqueId\" : \"membase\",",
                                                              "\"Data\" : \"Done\"}' ",
-                    "\"", {"Ref" : "WaitForInstanceWaitHandle"},"\"\n" ]]}}
+                    "\"", {"Ref" : "WaitForMembase0WaitHandle"}, "\"\n"
             
+        ]]}}
       }
+      
     },
    
     "Membase1" : {
@@ -87,25 +105,30 @@
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
         "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
-        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-1" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "MembasePackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
-            "sleep 5","\n",
-            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
-              "  --cluster-init-username=Administrator",
-              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
-              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
-            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
-              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "  --bucket=default",
-              "  --bucket-type=membase",
-              "  --bucket-password=",
-              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
-              "  --bucket-replica=1"
+            "sleep 5","\n"
             
+        ]]}}
       }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
     },
    
     "Membase2" : {
@@ -114,25 +137,30 @@
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
         "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
-        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-2" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "MembasePackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
-            "sleep 5","\n",
-            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
-              "  --cluster-init-username=Administrator",
-              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
-              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
-            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
-              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "  --bucket=default",
-              "  --bucket-type=membase",
-              "  --bucket-password=",
-              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
-              "  --bucket-replica=1"
+            "sleep 5","\n"
             
+        ]]}}
       }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
     },
    
     "Membase3" : {
@@ -141,25 +169,30 @@
         "KeyName" : { "Ref" : "KeyName" },
         "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
         "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
-        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-3" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "MembasePackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
-            "sleep 5","\n",
-            "/opt/membase/bin/membase cluster-init -c 127.0.0.1",
-              "  --cluster-init-username=Administrator",
-              "  --cluster-init-password=", { "Ref" : "RESTPassword" },
-              "  --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
-            "/opt/membase/bin/membase bucket-create -c 127.0.0.1",
-              "  -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "  --bucket=default",
-              "  --bucket-type=membase",
-              "  --bucket-password=",
-              "  --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
-              "  --bucket-replica=1"
+            "sleep 5","\n"
             
+        ]]}}
       }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
     },
    
 
@@ -202,17 +235,17 @@
       }
     },
 
-    "WaitForInstanceWaitHandle" : {
+    "WaitForMembase0WaitHandle" : {
       "Type" : "AWS::CloudFormation::WaitConditionHandle",
       "Properties" : {
       }
     },
 
-    "WaitForInstance" : {
+    "WaitForMembase0" : {
       "Type" : "AWS::CloudFormation::WaitCondition",
       "DependsOn" : "Membase0",
       "Properties" : {
-        "Handle" : {"Ref" : "WaitForInstanceWaitHandle"},
+        "Handle" : {"Ref" : "WaitForMembase0WaitHandle"},
         "Timeout" : "600"
       }
     }
