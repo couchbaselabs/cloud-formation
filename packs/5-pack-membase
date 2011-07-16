@@ -450,7 +450,7 @@
       "DependsOn" : "Membase0",
       "Properties" : {
         "Handle" : {"Ref" : "WaitForMembase0WaitHandle"},
-        "Timeout" : "600"
+        "Timeout" : "1200"
       }
     }
   },
