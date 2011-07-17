@@ -47,15 +47,10 @@
 
   "Mappings" : {
     "AWSInstanceType2Arch" : {
-      "m1.small"    : { "Arch" : "32" },
-      "m1.large"    : { "Arch" : "64" },
-      "m1.xlarge"   : { "Arch" : "64" },
-      "m2.xlarge"   : { "Arch" : "64" },
-      "m2.2xlarge"  : { "Arch" : "64" },
-      "m2.4xlarge"  : { "Arch" : "64" },
-      "c1.medium"   : { "Arch" : "32" },
-      "c1.xlarge"   : { "Arch" : "64" },
-      "cc1.4xlarge" : { "Arch" : "64" }
+      
+        "m1.small"    : { "Arch" : "32" },
+        "c1.medium"   : { "Arch" : "32" }
+      
     },
     "AWSRegionArch2AMI" : {
       "us-east-1" : { "32" : "ami-8c1fece5", "64" : "ami-8e1fece7" },
@@ -3241,6 +3236,3206 @@
         "Tags" : [ {
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-49" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase50" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-50" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase51" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-51" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase52" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-52" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase53" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-53" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase54" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-54" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase55" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-55" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase56" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-56" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase57" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-57" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase58" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-58" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase59" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-59" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase60" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-60" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase61" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-61" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase62" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-62" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase63" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-63" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase64" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-64" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase65" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-65" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase66" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-66" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase67" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-67" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase68" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-68" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase69" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-69" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase70" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-70" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase71" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-71" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase72" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-72" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase73" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-73" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase74" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-74" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase75" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-75" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase76" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-76" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase77" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-77" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase78" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-78" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase79" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-79" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase80" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-80" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase81" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-81" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase82" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-82" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase83" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-83" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase84" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-84" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase85" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-85" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase86" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-86" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase87" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-87" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase88" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-88" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase89" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-89" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase90" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-90" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase91" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-91" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase92" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-92" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase93" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-93" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase94" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-94" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase95" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-95" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase96" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-96" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase97" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-97" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase98" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-98" ]]}
+          }, {
+            "Key" : "MembasePackageURL",
+            "Value" : { "Ref" : "MembasePackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "rpm -i membase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing membase cluster...","\n",
+            "  /opt/membase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New membase cluster...","\n",
+              
+              "  /opt/membase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForMembase0"
+      
+    },
+   
+    "Membase99" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-99" ]]}
           }, {
             "Key" : "MembasePackageURL",
             "Value" : { "Ref" : "MembasePackageURL" }

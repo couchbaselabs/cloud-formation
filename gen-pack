@@ -9,6 +9,10 @@ require 'erb'
 erb_path      = ARGV[0]
 num_instances = ARGV[1].to_i
 pkg_url       = ARGV[2] || 'http://packages.couchbase.com/releases/1.7.0/membase-server-community_x86_1.7.0.rpm'
+pkg_64        = pkg_url.include?('_64_')
+
+default_instance_type = 'm1.small'
+default_instance_type = 'm1.large' if pkg_64
 
 print ERB.new(IO.read(erb_path)).result(binding)
 print "\n"

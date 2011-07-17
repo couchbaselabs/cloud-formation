@@ -7,14 +7,14 @@
       "Type" : "String"
     },
     "InstanceType": {
-      "Default": "m1.small",
+      "Default": "m1.large",
       "Description": "Type of EC2 instances for the Membase servers",
       "Type": "String"
     },
     "MembasePackageURL" : {
       "Description" : "URL to Membase software package",
       "Type" : "String",
-      "Default" : "http://packages.couchbase.com/releases/1.7.0/membase-server-community_x86_1.7.0.rpm"
+      "Default" : "http://packages.couchbase.com/releases/1.7.0/membase-server-community_x86_64_1.7.0.rpm"
     },
     "RESTPassword" : {
       "NoEcho": "true",
@@ -47,15 +47,15 @@
 
   "Mappings" : {
     "AWSInstanceType2Arch" : {
-      "m1.small"    : { "Arch" : "32" },
-      "m1.large"    : { "Arch" : "64" },
-      "m1.xlarge"   : { "Arch" : "64" },
-      "m2.xlarge"   : { "Arch" : "64" },
-      "m2.2xlarge"  : { "Arch" : "64" },
-      "m2.4xlarge"  : { "Arch" : "64" },
-      "c1.medium"   : { "Arch" : "32" },
-      "c1.xlarge"   : { "Arch" : "64" },
-      "cc1.4xlarge" : { "Arch" : "64" }
+      
+        "m1.large"    : { "Arch" : "64" },
+        "m1.xlarge"   : { "Arch" : "64" },
+        "m2.xlarge"   : { "Arch" : "64" },
+        "m2.2xlarge"  : { "Arch" : "64" },
+        "m2.4xlarge"  : { "Arch" : "64" },
+        "c1.xlarge"   : { "Arch" : "64" },
+        "cc1.4xlarge" : { "Arch" : "64" }
+      
     },
     "AWSRegionArch2AMI" : {
       "us-east-1" : { "32" : "ami-8c1fece5", "64" : "ami-8e1fece7" },
