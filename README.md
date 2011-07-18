@@ -1,8 +1,8 @@
-CloudFormation templates for Couchbase software
+Amazon CloudFormation templates for Couchbase software
 
 # Using the Membase server templates
 
-When launching an Amazon CloudFormation stack, okease choose one of
+When launching an Amazon CloudFormation stack, pease choose one of
 the pre-generated "N-pack" templates in the ./packs subdirectory tree.
 
 For example, if you chose the packs/membase-1.7.0-32bit/6-pack-membase
@@ -51,16 +51,20 @@ capacity (more nodes) to the cluster.
 
 To grow that cluster, you could launch another N-pack of Membase, such
 as an additional 2-pack.  When launching the next pack, provide the
-HOST:REST_PORT of some public IP/network address of some node in the
-original pack (eg, the 3-pack) as input via the
-ExistingClusterHostPort parameter.  For example, this might be
-something like "10.50.22.21:8091".  The Membase server template will
-then auto-join its newly launched nodes (from the 2-pack) to the
-existing cluster, but will not auto-Rebalance the newly expanded
-5-node cluster.  You can use the Membase web management console UI to
-kick off the Rebalance operation yourself, when you're ready to do so.
+HOST:REST_PORT of some public DNS or public IP address of some node in
+the original pack (eg, the 3-pack) as input via the
+ExistingClusterHostPort parameter.
+
+For example, this might be something like "10.50.22.21:8091".  The
+Membase server template will then auto-join its newly launched nodes
+(from the 2-pack) to the existing cluster, but will not auto-Rebalance
+the newly expanded 5-node cluster.  You can use the Membase web
+management console UI to kick off the Rebalance operation yourself,
+when you're ready to do so.
+
 Or, if you change your mind, you can also easily remove the added
-server nodes (using the "Remove Server" feature).
+server nodes (using the "Remove Server" feature) in the Membase web
+management console UI.
 
 If you specify an ExistingClusterHostPort, then newly launched
 nodes will inherit the configuration of the existing cluster,
