@@ -2,7 +2,7 @@ Amazon AWS CloudFormation templates for Couchbase software
 
 # Using the Membase server templates
 
-When launching an Amazon CloudFormation stack, pease choose one of
+When launching an Amazon CloudFormation stack, please choose one of
 the pre-generated "N-pack" templates in the ./packs subdirectory tree.
 
 For example, if you chose the packs/membase-1.7.0-32bit/6-pack-membase
