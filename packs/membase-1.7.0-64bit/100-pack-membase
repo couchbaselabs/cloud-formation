@@ -28,7 +28,7 @@
       "MinValue" : "200"
     },
     "RAMForDefaultBucket" : {
-      "Description" : "RAM quota in MB for each node for the default bucket. Should be <= RAMPerServer",
+      "Description" : "RAM quota in MB for each node for the default bucket. Should be <= RAMPerServer. Set to 0 for no default bucket.",
       "Type" : "Number",
       "Default" : "500",
       "MinValue" : "0"
@@ -121,13 +121,15 @@
               "    --cluster-init-username=Administrator",
               "    --cluster-init-password=", { "Ref" : "RESTPassword" },
               "    --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
-              "  /opt/membase/bin/membase bucket-create -c 127.0.0.1",
-              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    --bucket=default",
-              "    --bucket-type=membase",
-              "    --bucket-password=",
-              "    --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
-              "    --bucket-replica=1","\n",
+              "  if [ \"0\" != \"", { "Ref" : "RAMForDefaultBucket" }, "\" ]; then","\n",
+              "    /opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "      -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "      --bucket=default",
+              "      --bucket-type=membase",
+              "      --bucket-password=",
+              "      --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "      --bucket-replica=1","\n",
+              "  fi","\n",
               
             "fi","\n"
             
