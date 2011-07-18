@@ -1,6 +1,6 @@
 CloudFormation templates for Couchbase software
 
-= Using the Membase server templates
+# Using the Membase server templates
 
 When launching an Amazon CloudFormation stack, okease choose one of
 the pre-generated "N-pack" templates in the ./packs subdirectory tree.
@@ -9,7 +9,7 @@ For example, if you chose the packs/membase-1.7.0-32bit/6-pack-membase
 template, then you would be launching a six machine ("six pack"),
 auto-joined cluster of Membase Server nodes.
 
-== Membase server template inputs
+## Membase server template inputs
 
 Some of the more important launch input values that you'll have to
 specify or will want to override when launching an N-pack of Membase
@@ -43,7 +43,7 @@ For production deployments, proper sizing of your Membase cluster is
 very important.  Please see http://couchbase.org for more technical
 information.
 
-== Growing a Membase cluster
+## Growing a Membase cluster
 
 For example, you might already have launched and be running a 3-pack
 cluster of Membase server nodes, and it's finally time to add more
@@ -66,16 +66,16 @@ If you specify an ExistingClusterHostPort, then newly launched
 nodes will inherit the configuration of the existing cluster,
 and the RAM quota input parameters will be ignored.
 
-= More info
+# More info
 
 * http://couchbase.com
 * http://docs.amazonwebservices.com/FeaturedArticles/latest/index.html?cloudformation-waitcondition-article.html
 
-= License
+# License
 
 MIT - these templates were made for you.
 
-= TODO
+# TODO
 
 * EBS configuration
 * Alerts configuration - nice to have
