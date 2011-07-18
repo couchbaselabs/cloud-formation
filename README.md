@@ -1,4 +1,4 @@
-Amazon CloudFormation templates for Couchbase software
+Amazon AWS CloudFormation templates for Couchbase software
 
 # Using the Membase server templates
 
@@ -73,6 +73,7 @@ and the RAM quota input parameters will be ignored.
 # More info
 
 * http://couchbase.com
+* http://aws.amazon.com/cloudformation/
 * http://docs.amazonwebservices.com/FeaturedArticles/latest/index.html?cloudformation-waitcondition-article.html
 
 # License
