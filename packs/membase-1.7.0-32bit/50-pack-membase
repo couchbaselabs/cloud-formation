@@ -1,6 +1,6 @@
 {
  "AWSTemplateFormatVersion" : "2010-09-09",
- "Description" : "Template for Membase Server on EC2",
+ "Description" : "Template for membase server on EC2",
  "Parameters" : {
     "KeyName" : {
       "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
@@ -8,11 +8,11 @@
     },
     "InstanceType": {
       "Default": "m1.small",
-      "Description": "Type of EC2 instances for the Membase servers",
+      "Description": "Type of EC2 instances for the membase servers",
       "Type": "String"
     },
-    "MembasePackageURL" : {
-      "Description" : "URL to Membase software package",
+    "PackageURL" : {
+      "Description" : "URL to membase server software package",
       "Type" : "String",
       "Default" : "http://packages.couchbase.com/releases/1.7.0/membase-server-community_x86_1.7.0.rpm"
     },
@@ -63,7 +63,7 @@
 
   "Resources" : {
    
-    "Membase0" : {
+    "ServerNode0" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -90,8 +90,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-0" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -100,7 +100,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -130,17 +130,17 @@
             
               ,
               "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
-                                                             "\"Reason\" : \"Membase0 node is ready\",",
+                                                             "\"Reason\" : \"ServerNode0 node is ready\",",
                                                              "\"UniqueId\" : \"membase\",",
                                                              "\"Data\" : \"Done\"}' ",
-                    "\"", {"Ref" : "WaitForMembase0WaitHandle"}, "\"\n"
+                    "\"", {"Ref" : "WaitForServerNode0WaitHandle"}, "\"\n"
             
         ]]}}
       }
       
     },
    
-    "Membase1" : {
+    "ServerNode1" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -167,8 +167,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-1" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -177,7 +177,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -191,7 +191,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -200,11 +200,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase2" : {
+    "ServerNode2" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -231,8 +231,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-2" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -241,7 +241,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -255,7 +255,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -264,11 +264,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase3" : {
+    "ServerNode3" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -295,8 +295,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-3" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -305,7 +305,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -319,7 +319,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -328,11 +328,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase4" : {
+    "ServerNode4" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -359,8 +359,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-4" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -369,7 +369,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -383,7 +383,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -392,11 +392,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase5" : {
+    "ServerNode5" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -423,8 +423,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-5" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -433,7 +433,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -447,7 +447,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -456,11 +456,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase6" : {
+    "ServerNode6" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -487,8 +487,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-6" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -497,7 +497,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -511,7 +511,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -520,11 +520,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase7" : {
+    "ServerNode7" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -551,8 +551,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-7" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -561,7 +561,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -575,7 +575,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -584,11 +584,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase8" : {
+    "ServerNode8" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -615,8 +615,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-8" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -625,7 +625,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -639,7 +639,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -648,11 +648,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase9" : {
+    "ServerNode9" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -679,8 +679,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-9" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -689,7 +689,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -703,7 +703,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -712,11 +712,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase10" : {
+    "ServerNode10" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -743,8 +743,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-10" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -753,7 +753,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -767,7 +767,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -776,11 +776,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase11" : {
+    "ServerNode11" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -807,8 +807,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-11" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -817,7 +817,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -831,7 +831,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -840,11 +840,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase12" : {
+    "ServerNode12" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -871,8 +871,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-12" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -881,7 +881,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -895,7 +895,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -904,11 +904,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase13" : {
+    "ServerNode13" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -935,8 +935,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-13" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -945,7 +945,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -959,7 +959,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -968,11 +968,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase14" : {
+    "ServerNode14" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -999,8 +999,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-14" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1009,7 +1009,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1023,7 +1023,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1032,11 +1032,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase15" : {
+    "ServerNode15" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1063,8 +1063,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-15" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1073,7 +1073,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1087,7 +1087,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1096,11 +1096,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase16" : {
+    "ServerNode16" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1127,8 +1127,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-16" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1137,7 +1137,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1151,7 +1151,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1160,11 +1160,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase17" : {
+    "ServerNode17" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1191,8 +1191,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-17" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1201,7 +1201,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1215,7 +1215,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1224,11 +1224,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase18" : {
+    "ServerNode18" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1255,8 +1255,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-18" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1265,7 +1265,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1279,7 +1279,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1288,11 +1288,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase19" : {
+    "ServerNode19" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1319,8 +1319,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-19" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1329,7 +1329,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1343,7 +1343,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1352,11 +1352,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase20" : {
+    "ServerNode20" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1383,8 +1383,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-20" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1393,7 +1393,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1407,7 +1407,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1416,11 +1416,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase21" : {
+    "ServerNode21" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1447,8 +1447,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-21" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1457,7 +1457,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1471,7 +1471,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1480,11 +1480,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase22" : {
+    "ServerNode22" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1511,8 +1511,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-22" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1521,7 +1521,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1535,7 +1535,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1544,11 +1544,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase23" : {
+    "ServerNode23" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1575,8 +1575,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-23" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1585,7 +1585,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1599,7 +1599,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1608,11 +1608,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase24" : {
+    "ServerNode24" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1639,8 +1639,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-24" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1649,7 +1649,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1663,7 +1663,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1672,11 +1672,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase25" : {
+    "ServerNode25" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1703,8 +1703,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-25" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1713,7 +1713,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1727,7 +1727,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1736,11 +1736,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase26" : {
+    "ServerNode26" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1767,8 +1767,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-26" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1777,7 +1777,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1791,7 +1791,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1800,11 +1800,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase27" : {
+    "ServerNode27" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1831,8 +1831,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-27" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1841,7 +1841,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1855,7 +1855,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1864,11 +1864,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase28" : {
+    "ServerNode28" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1895,8 +1895,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-28" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1905,7 +1905,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1919,7 +1919,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1928,11 +1928,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase29" : {
+    "ServerNode29" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -1959,8 +1959,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-29" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -1969,7 +1969,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -1983,7 +1983,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -1992,11 +1992,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase30" : {
+    "ServerNode30" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2023,8 +2023,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-30" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2033,7 +2033,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2047,7 +2047,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2056,11 +2056,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase31" : {
+    "ServerNode31" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2087,8 +2087,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-31" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2097,7 +2097,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2111,7 +2111,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2120,11 +2120,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase32" : {
+    "ServerNode32" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2151,8 +2151,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-32" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2161,7 +2161,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2175,7 +2175,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2184,11 +2184,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase33" : {
+    "ServerNode33" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2215,8 +2215,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-33" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2225,7 +2225,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2239,7 +2239,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2248,11 +2248,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase34" : {
+    "ServerNode34" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2279,8 +2279,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-34" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2289,7 +2289,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2303,7 +2303,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2312,11 +2312,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase35" : {
+    "ServerNode35" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2343,8 +2343,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-35" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2353,7 +2353,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2367,7 +2367,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2376,11 +2376,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase36" : {
+    "ServerNode36" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2407,8 +2407,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-36" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2417,7 +2417,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2431,7 +2431,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2440,11 +2440,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase37" : {
+    "ServerNode37" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2471,8 +2471,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-37" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2481,7 +2481,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2495,7 +2495,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2504,11 +2504,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase38" : {
+    "ServerNode38" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2535,8 +2535,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-38" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2545,7 +2545,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2559,7 +2559,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2568,11 +2568,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase39" : {
+    "ServerNode39" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2599,8 +2599,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-39" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2609,7 +2609,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2623,7 +2623,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2632,11 +2632,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase40" : {
+    "ServerNode40" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2663,8 +2663,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-40" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2673,7 +2673,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2687,7 +2687,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2696,11 +2696,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase41" : {
+    "ServerNode41" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2727,8 +2727,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-41" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2737,7 +2737,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2751,7 +2751,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2760,11 +2760,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase42" : {
+    "ServerNode42" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2791,8 +2791,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-42" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2801,7 +2801,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2815,7 +2815,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2824,11 +2824,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase43" : {
+    "ServerNode43" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2855,8 +2855,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-43" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2865,7 +2865,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2879,7 +2879,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2888,11 +2888,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase44" : {
+    "ServerNode44" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2919,8 +2919,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-44" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2929,7 +2929,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -2943,7 +2943,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -2952,11 +2952,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase45" : {
+    "ServerNode45" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -2983,8 +2983,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-45" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -2993,7 +2993,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -3007,7 +3007,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -3016,11 +3016,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase46" : {
+    "ServerNode46" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -3047,8 +3047,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-46" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -3057,7 +3057,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -3071,7 +3071,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -3080,11 +3080,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase47" : {
+    "ServerNode47" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -3111,8 +3111,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-47" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -3121,7 +3121,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -3135,7 +3135,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -3144,11 +3144,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase48" : {
+    "ServerNode48" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -3175,8 +3175,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-48" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -3185,7 +3185,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -3199,7 +3199,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -3208,11 +3208,11 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
-    "Membase49" : {
+    "ServerNode49" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "KeyName" : { "Ref" : "KeyName" },
@@ -3239,8 +3239,8 @@
             "Key" : "Name",
             "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-49" ]]}
           }, {
-            "Key" : "MembasePackageURL",
-            "Value" : { "Ref" : "MembasePackageURL" }
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
           }, {
             "Key" : "UserTag",
             "Value" : { "Ref" : "UserTag" }
@@ -3249,7 +3249,7 @@
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
-            "wget ", { "Ref" : "MembasePackageURL" },"\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i membase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
@@ -3263,7 +3263,7 @@
               
               "  /opt/membase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
-              "    -c ", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
               
             "fi","\n"
@@ -3272,7 +3272,7 @@
       }
       
         ,
-        "DependsOn" : "WaitForMembase0"
+        "DependsOn" : "WaitForServerNode0"
       
     },
    
@@ -3316,17 +3316,17 @@
       }
     },
 
-    "WaitForMembase0WaitHandle" : {
+    "WaitForServerNode0WaitHandle" : {
       "Type" : "AWS::CloudFormation::WaitConditionHandle",
       "Properties" : {
       }
     },
 
-    "WaitForMembase0" : {
+    "WaitForServerNode0" : {
       "Type" : "AWS::CloudFormation::WaitCondition",
-      "DependsOn" : "Membase0",
+      "DependsOn" : "ServerNode0",
       "Properties" : {
-        "Handle" : {"Ref" : "WaitForMembase0WaitHandle"},
+        "Handle" : {"Ref" : "WaitForServerNode0WaitHandle"},
         "Timeout" : "1200"
       }
     }
@@ -3334,8 +3334,8 @@
 
   "Outputs" : {
     "RESTWebConsoleURL" : {
-      "Description" : "The URL for the newly created Membase node(s)",
-      "Value" : { "Fn::Join" : ["", [ "http://", { "Fn::GetAtt" : [ "Membase0", "PublicIp" ] }, ":8091" ]]}
+      "Description" : "The URL for the newly created membase node(s)",
+      "Value" : { "Fn::Join" : ["", [ "http://", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] }, ":8091" ]]}
     }
   }
 }

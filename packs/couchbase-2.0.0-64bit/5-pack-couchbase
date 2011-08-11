@@ -1,6 +1,6 @@
 {
  "AWSTemplateFormatVersion" : "2010-09-09",
- "Description" : "Template for membase server on EC2",
+ "Description" : "Template for couchbase server on EC2",
  "Parameters" : {
     "KeyName" : {
       "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
@@ -8,13 +8,13 @@
     },
     "InstanceType": {
       "Default": "m1.large",
-      "Description": "Type of EC2 instances for the membase servers",
+      "Description": "Type of EC2 instances for the couchbase servers",
       "Type": "String"
     },
     "PackageURL" : {
-      "Description" : "URL to membase server software package",
+      "Description" : "URL to couchbase server software package",
       "Type" : "String",
-      "Default" : "http://packages.couchbase.com/releases/1.7.1/membase-server-community_x86_64_1.7.1.rpm"
+      "Default" : "http://packages.couchbase.com/releases/2.0.0/couchbase-server-community_x86_64_2.0.0.rpm"
     },
     "RESTPassword" : {
       "NoEcho": "true",
@@ -106,23 +106,23 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i membase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
-            "  echo Existing membase cluster...","\n",
-            "  /opt/membase/bin/membase server-add",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/membase server-add",
             "    -u Administrator -p ", { "Ref" : "RESTPassword" },
             "    -c ", { "Ref" : "ExistingClusterHostPort" },
             "    --server-add=`hostname -i`:8091","\n",
             "else","\n",
-            "  echo New membase cluster...","\n",
+            "  echo New couchbase cluster...","\n",
               
-              "  /opt/membase/bin/membase cluster-init -c 127.0.0.1",
+              "  /opt/couchbase/bin/membase cluster-init -c 127.0.0.1",
               "    --cluster-init-username=Administrator",
               "    --cluster-init-password=", { "Ref" : "RESTPassword" },
               "    --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
               "  if [ \"0\" != \"", { "Ref" : "RAMForDefaultBucket" }, "\" ]; then","\n",
-              "    /opt/membase/bin/membase bucket-create -c 127.0.0.1",
+              "    /opt/couchbase/bin/membase bucket-create -c 127.0.0.1",
               "      -u Administrator -p ", { "Ref" : "RESTPassword" },
               "      --bucket=default",
               "      --bucket-type=membase",
@@ -136,7 +136,7 @@
               ,
               "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
                                                              "\"Reason\" : \"ServerNode0 node is ready\",",
-                                                             "\"UniqueId\" : \"membase\",",
+                                                             "\"UniqueId\" : \"couchbase\",",
                                                              "\"Data\" : \"Done\"}' ",
                     "\"", {"Ref" : "WaitForServerNode0WaitHandle"}, "\"\n"
             
@@ -183,18 +183,18 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i membase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
-            "  echo Existing membase cluster...","\n",
-            "  /opt/membase/bin/membase server-add",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/membase server-add",
             "    -u Administrator -p ", { "Ref" : "RESTPassword" },
             "    -c ", { "Ref" : "ExistingClusterHostPort" },
             "    --server-add=`hostname -i`:8091","\n",
             "else","\n",
-            "  echo New membase cluster...","\n",
+            "  echo New couchbase cluster...","\n",
               
-              "  /opt/membase/bin/membase server-add",
+              "  /opt/couchbase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
               "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
@@ -247,18 +247,146 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i membase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
-            "  echo Existing membase cluster...","\n",
-            "  /opt/membase/bin/membase server-add",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/membase server-add",
             "    -u Administrator -p ", { "Ref" : "RESTPassword" },
             "    -c ", { "Ref" : "ExistingClusterHostPort" },
             "    --server-add=`hostname -i`:8091","\n",
             "else","\n",
-            "  echo New membase cluster...","\n",
+            "  echo New couchbase cluster...","\n",
               
-              "  /opt/membase/bin/membase server-add",
+              "  /opt/couchbase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForServerNode0"
+      
+    },
+   
+    "ServerNode3" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-3" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/membase server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForServerNode0"
+      
+    },
+   
+    "ServerNode4" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-4" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "sleep 5","\n",
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/membase server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/membase server-add",
               "    -u Administrator -p ", { "Ref" : "RESTPassword" },
               "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
               "    --server-add=`hostname -i`:8091","\n",
@@ -331,7 +459,7 @@
 
   "Outputs" : {
     "RESTWebConsoleURL" : {
-      "Description" : "The URL for the newly created membase node(s)",
+      "Description" : "The URL for the newly created couchbase node(s)",
       "Value" : { "Fn::Join" : ["", [ "http://", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] }, ":8091" ]]}
     }
   }
