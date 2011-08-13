@@ -53,6 +53,14 @@
       "Type" : "String",
       "Default" : "#"
     }
+    <% if pkg_base == 'couchbase' %>
+      ,
+      "NumVBuckets" : {
+        "Description" : "Optional number of vbuckets.",
+        "Type" : "String",
+        "Default" : "default"
+      }
+    <% end %>
   },
 
   "Mappings" : {
@@ -122,6 +130,13 @@
             "rpm -i <%= pkg_base %>-server-community*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
+            <% if pkg_base == 'couchbase' %>
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            <% end %>
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
             "  echo Existing <%= pkg_base %> cluster...","\n",
             "  /opt/<%= pkg_base %>/bin/membase server-add",

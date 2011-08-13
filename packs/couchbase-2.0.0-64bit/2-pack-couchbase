@@ -53,6 +53,14 @@
       "Type" : "String",
       "Default" : "#"
     }
+    
+      ,
+      "NumVBuckets" : {
+        "Description" : "Optional number of vbuckets.",
+        "Type" : "String",
+        "Default" : "default"
+      }
+    
   },
 
   "Mappings" : {
@@ -119,6 +127,13 @@
             "rpm -i couchbase-server-community*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
             "  echo Existing couchbase cluster...","\n",
             "  /opt/couchbase/bin/membase server-add",
@@ -198,6 +213,13 @@
             "rpm -i couchbase-server-community*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
             "  echo Existing couchbase cluster...","\n",
             "  /opt/couchbase/bin/membase server-add",

@@ -53,6 +53,7 @@
       "Type" : "String",
       "Default" : "#"
     }
+    
   },
 
   "Mappings" : {
@@ -114,6 +115,7 @@
             "rpm -i membase-server-community*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
+            
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
             "  echo Existing membase cluster...","\n",
             "  /opt/membase/bin/membase server-add",
