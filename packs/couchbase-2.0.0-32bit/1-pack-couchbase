@@ -42,6 +42,16 @@
       "Description" : "Optional tag value, to help track your launched EC2 instances",
       "Type" : "String",
       "Default" : "none"
+    },
+    "AfterInstall" : {
+      "Description" : "Optional single-line sh script to run after install, before configuration/join.",
+      "Type" : "String",
+      "Default" : "#"
+    },
+    "AfterConfigure" : {
+      "Description" : "Optional single-line sh script to run after configuration/join.",
+      "Type" : "String",
+      "Default" : "#"
     }
   },
 
@@ -102,6 +112,7 @@
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
             "rpm -i couchbase-server-community*.rpm","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
             "  echo Existing couchbase cluster...","\n",
@@ -126,7 +137,8 @@
               "      --bucket-replica=1","\n",
               "  fi","\n",
               
-            "fi","\n"
+            "fi","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterConfigure" }, "\"\n"
             
               ,
               "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
