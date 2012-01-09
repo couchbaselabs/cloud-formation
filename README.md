@@ -1,21 +1,21 @@
 Amazon AWS CloudFormation templates for Couchbase software
 
-# Using the Membase server templates
+# Using the Couchbase server templates
 
 When launching an Amazon CloudFormation stack, please choose one of
 the pre-generated "N-pack" templates in the ./packs subdirectory tree.
 
-For example, if you chose the packs/membase-1.7.0-32bit/6-pack-membase
+For example, if you chose the packs/couchbase-1.8.0-32bit/6-pack-couchbase
 template, then you would be launching a six machine ("six pack"),
-auto-joined cluster of Membase Server nodes.
+auto-joined cluster of Couchbase Server nodes.
 
-## Membase server template inputs
+## Couchbase server template inputs
 
 Some of the more important launch input values that you'll have to
-specify or will want to override when launching an N-pack of Membase
+specify or will want to override when launching an N-pack of Couchbase
 servers...
 
-* REST password - for the Administrator user for the Membase web
+* REST password - for the Administrator user for the Couchbase web
   management console UI and REST API.
 
 * SSH key name - allows you to remotely ssh onto each launched server
@@ -23,13 +23,13 @@ servers...
   using the AWS/EC2 web management console.
 
 * RAM quota per server node - maximum amount of RAM (in MB) that
-  Membase server processes are allowed to use on a server.  Be sure to
+  Couchbase server processes are allowed to use on a server.  Be sure to
   leave enough extra RAM "unused" headroom for O/S requirements and to
   avoid swap.
 
 * RAM quota per server node for the default bucket.  A default
-  membase-type bucket on port 11211, with no password, will be created
-  by the Membase CloudFormation templates with this given RAM quota
+  couchbase-type bucket on port 11211, with no password, will be created
+  by the Couchbase CloudFormation templates with this given RAM quota
   amount (in MB) per server node.  You can specify 0 to not have this
   default bucket created.
 
@@ -39,41 +39,41 @@ servers...
   your RAM quota input values should be less than the instance type's
   actual RAM.
 
-For production deployments, proper sizing of your Membase cluster is
+For production deployments, proper sizing of your Couchbase cluster is
 very important.  Please see http://couchbase.org for more technical
 information.
 
-## Growing a Membase cluster
+## Growing a Couchbase cluster
 
 For example, you might already have launched and be running a 3-pack
-cluster of Membase server nodes, and it's finally time to add more
+cluster of Couchbase server nodes, and it's finally time to add more
 capacity (more nodes) to the cluster.
 
-To grow that cluster, you could launch another N-pack of Membase, such
+To grow that cluster, you could launch another N-pack of Couchbase, such
 as an additional 2-pack.  When launching the next pack, provide the
 HOST:REST_PORT of some public DNS or public IP address of some node in
 the original pack (eg, the 3-pack) as input via the
 ExistingClusterHostPort parameter.
 
 For example, this might be something like "10.50.22.21:8091".  The
-Membase server template will then auto-join its newly launched nodes
+Couchbase server template will then auto-join its newly launched nodes
 (from the 2-pack) to the existing cluster, but will not auto-Rebalance
-the newly expanded 5-node cluster.  You can use the Membase web
+the newly expanded 5-node cluster.  You can use the Couchbase web
 management console UI to kick off the Rebalance operation yourself,
 when you're ready to do so.
 
 Or, if you change your mind, you can also easily remove the added
-server nodes (using the "Remove Server" feature) in the Membase web
+server nodes (using the "Remove Server" feature) in the Couchbase web
 management console UI.
 
 If you specify an ExistingClusterHostPort, then newly launched
 nodes will inherit the configuration of the existing cluster,
 and the RAM quota input parameters will be ignored.
 
-# Tutorial - Your First Membase Cluster
+# Tutorial - Your First Couchbase Cluster
 
 The following is a step-by-step tutorial of launching your first
-Membase cluster on EC2 using these CloudFormation templates.
+Couchbase cluster on EC2 using these CloudFormation templates.
 
 ## Step 1
 
@@ -90,14 +90,14 @@ Point your web browser to the AWS Management Console, click on the
     <img src="https://github.com/couchbaselabs/cloud-formation/raw/master/docs/aws_create-new-stack.png"/>
 </div>
 
-Fill in a Stack Name (for example: 'my-membase').
+Fill in a Stack Name (for example: 'my-couchbase').
 
 Then, choose to Upload a Template File.
 
 Then, specify an N-pack template file from the cloud-formation/packs
 subdirectory tree.
 
-Here, I've chosen a 3-pack of 32-bit Membase 1.7.0.  That means this
+Here, I've chosen a 3-pack of 32-bit Couchbase 1.8.0.  That means this
 template will launch 3 EC2 nodes and auto-join them into a 3-node
 cluster...
 
@@ -131,37 +131,37 @@ Stack'...
 
 ## Stack Creation Progress
 
-While your 3-pack of Membase is launching, you can enjoy a 6-pack of
-beer.  You can also track the launching of your Membase nodes in the
-Events tab for your 'my-membase' stack...
+While your 3-pack of Couchbase is launching, you can enjoy a 6-pack of
+beer.  You can also track the launching of your Couchbase nodes in the
+Events tab for your 'my-couchbase' stack...
 
 <div>
     <img src="https://github.com/couchbaselabs/cloud-formation/raw/master/docs/aws_create-in-progress.png"/>
 </div>
 
-## Membase Is Ready
+## Couchbase Is Ready
 
-Once it's done, the Outputs tab for 'my-membase' will have the
-URL for the Membase management REST/web console UI...
+Once it's done, the Outputs tab for 'my-couchbase' will have the
+URL for the Couchbase management REST/web console UI...
 
 <div>
     <img src="https://github.com/couchbaselabs/cloud-formation/raw/master/docs/aws_stack-output.png"/>
 </div>
 
-Clicking on that RESTWebConsoleURL will take you to the Membase
+Clicking on that RESTWebConsoleURL will take you to the Couchbase
 login page.
 
 Use the Username of 'Administrator' and a Password of the RESTPassword
 that you specified earlier...
 
 <div>
-    <img src="https://github.com/couchbaselabs/cloud-formation/raw/master/docs/aws_membase-login.png"/>
+    <img src="https://github.com/couchbaselabs/cloud-formation/raw/master/docs/aws_couchbase-login.png"/>
 </div>
 
-Logging in will take you to Membase's Cluster Overview page...
+Logging in will take you to Couchbase's Cluster Overview page...
 
 <div>
-    <img src="https://github.com/couchbaselabs/cloud-formation/raw/master/docs/aws_membase-overview.png"/>
+    <img src="https://github.com/couchbaselabs/cloud-formation/raw/master/docs/aws_couchbase-overview.png"/>
 </div>
 
 You can see that 1 server is active and that 2 servers are Pending
@@ -200,9 +200,9 @@ You can also ssh onto one of those nodes...
     [ec2-user@domU-12-31-39-02-D9-78 ~]$
 
 And then you can use memcachetest to drive some basic, synthetic test
-load onto your Membase cluster, on the default bucket...
+load onto your Couchbase cluster, on the default bucket...
 
-    [ec2-user@domU-12-31-39-02-D9-78 ~]$ /opt/membase/bin/memcachetest -l
+    [ec2-user@domU-12-31-39-02-D9-78 ~]$ /opt/couchbase/bin/memcachetest -l
 
 In your web browser, navigate to MONITOR -> Data Buckets -> default to
 see live, charted statistics.
@@ -215,7 +215,7 @@ Be sure to drill around -- the graphs can be very helpful to diagnose
 issues.
 
 Finally, in your EC2 tab in the AWS Management Console, your new EC2
-instances will be named with the prefix of 'my-membase' (the name of
+instances will be named with the prefix of 'my-couchbase' (the name of
 your stack), for easy tracking...
 
 <div>

@@ -8,12 +8,15 @@ require 'erb'
 #
 erb_path      = ARGV[0]
 num_instances = ARGV[1].to_i
-pkg_url       = ARGV[2] || 'http://packages.couchbase.com/releases/1.7.0/membase-server-community_x86_1.7.0.rpm'
+pkg_url       = ARGV[2] || 'http://packages.couchbase.com/releases/1.8.0/couchbase-server-community_x86_1.8.0.rpm'
 pkg_base      = pkg_url.split('/')[-1].split('-')[0] # membase or couchbase
 pkg_64        = pkg_url.include?('_64_')
 
 default_instance_type = 'm1.small'
 default_instance_type = 'm1.large' if pkg_64
+
+cli = 'couchbase-cli'
+cli = 'membase' if pkg_base == 'membase'
 
 print ERB.new(IO.read(erb_path)).result(binding)
 print "\n"
