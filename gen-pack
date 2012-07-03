@@ -10,6 +10,7 @@ erb_path      = ARGV[0]
 num_instances = ARGV[1].to_i
 pkg_url       = ARGV[2] || 'http://packages.couchbase.com/releases/1.8.0/couchbase-server-community_x86_1.8.0.rpm'
 pkg_base      = pkg_url.split('/')[-1].split('-')[0] # membase or couchbase
+pkg_ver       = pkg_url.split('/')[-1].split('-')[-1].split('_')[0]  # enterprise or community
 pkg_64        = pkg_url.include?('_64_')
 
 default_instance_type = 'm1.small'

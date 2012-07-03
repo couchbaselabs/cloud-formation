@@ -127,7 +127,7 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i <%= pkg_base %>-server-community*.rpm","\n",
+            "rpm -i <%= pkg_base %>-server-<%= pkg_ver %>*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             <% if pkg_base == 'couchbase' %>
