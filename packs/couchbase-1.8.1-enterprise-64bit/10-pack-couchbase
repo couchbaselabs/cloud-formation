@@ -124,7 +124,7 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i couchbase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-enterprise*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             
@@ -210,7 +210,7 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i couchbase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-enterprise*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             
@@ -283,7 +283,7 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i couchbase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-enterprise*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             
@@ -356,7 +356,7 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i couchbase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-enterprise*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             
@@ -429,7 +429,7 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i couchbase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-enterprise*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             
@@ -502,7 +502,7 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i couchbase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-enterprise*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             
@@ -575,7 +575,7 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i couchbase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-enterprise*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             
@@ -648,7 +648,7 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i couchbase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-enterprise*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             
@@ -721,7 +721,7 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i couchbase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-enterprise*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             
@@ -794,7 +794,7 @@
             "#!/bin/bash -ex","\n",
             "yum -y install openssl098e","\n",
             "wget ", { "Ref" : "PackageURL" },"\n",
-            "rpm -i couchbase-server-community*.rpm","\n",
+            "rpm -i couchbase-server-enterprise*.rpm","\n",
             "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
             "sleep 5","\n",
             
