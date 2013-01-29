@@ -1,0 +1,900 @@
+{
+ "AWSTemplateFormatVersion" : "2010-09-09",
+ "Description" : "Template for couchbase server on EC2",
+ "Parameters" : {
+    "KeyName" : {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "Type" : "String"
+    },
+    "InstanceType": {
+      "Default": "m1.large",
+      "Description": "Type of EC2 instances for the couchbase servers",
+      "Type": "String"
+    },
+    "PackageURL" : {
+      "Description" : "URL to couchbase server software package",
+      "Type" : "String",
+      "Default" : "http://packages.couchbase.com/releases/2.0.0/couchbase-server-community_x86_64_2.0.0.rpm"
+    },
+    "RESTPassword" : {
+      "NoEcho": "true",
+      "Description" : "Password for REST Administrator API and web-console interface",
+      "Type" : "String"
+    },
+    "RAMPerServer" : {
+      "Description" : "RAM quota in MB for each node in the cluster",
+      "Type" : "Number",
+      "Default" : "500",
+      "MinValue" : "200"
+    },
+    "RAMForDefaultBucket" : {
+      "Description" : "RAM quota in MB for each node for the default bucket. Should be <= RAMPerServer. Set to 0 for no default bucket.",
+      "Type" : "Number",
+      "Default" : "500",
+      "MinValue" : "0"
+    },
+    "ExistingClusterHostPort" : {
+      "Description" : "Optional 'host:port', if you want to join new node(s) to an existing cluster node.  Leave as 'host:port' to not join to an existing cluster",
+      "Type" : "String",
+      "Default" : "host:port"
+    },
+    "UserTag" : {
+      "Description" : "Optional tag value, to help track your launched EC2 instances",
+      "Type" : "String",
+      "Default" : "none"
+    },
+    "AfterInstall" : {
+      "Description" : "Optional single-line sh script to run after install, before configuration/join.",
+      "Type" : "String",
+      "Default" : "#"
+    },
+    "AfterConfigure" : {
+      "Description" : "Optional single-line sh script to run after configuration/join.",
+      "Type" : "String",
+      "Default" : "#"
+    }
+    
+      ,
+      "NumVBuckets" : {
+        "Description" : "Optional number of vbuckets.",
+        "Type" : "String",
+        "Default" : "default"
+      }
+    
+  },
+
+  "Mappings" : {
+    "AWSInstanceType2Arch" : {
+      
+        "m1.large"    : { "Arch" : "64" },
+        "m1.xlarge"   : { "Arch" : "64" },
+        "m2.xlarge"   : { "Arch" : "64" },
+        "m2.2xlarge"  : { "Arch" : "64" },
+        "m2.4xlarge"  : { "Arch" : "64" },
+        "c1.xlarge"   : { "Arch" : "64" },
+        "cc1.4xlarge" : { "Arch" : "64" }
+      
+    },
+    "AWSRegionArch2AMI" : {
+      "us-east-1" : { "32" : "ami-7f418316", "64" : "ami-7341831a" },
+      "us-west-1" : { "32" : "ami-951945d0", "64" : "ami-971945d2" },
+      "eu-west-1" : { "32" : "ami-24506250", "64" : "ami-20506254" },
+      "ap-southeast-1" : { "32" : "ami-74dda626", "64" : "ami-7edda62c" },
+      "ap-northeast-1" : { "32" : "ami-dcfa4edd", "64" : "ami-e8fa4ee9" }
+    }
+  },
+
+  "Resources" : {
+   
+    "ServerNode0" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-0" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
+            "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/couchbase-cli server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/couchbase-cli cluster-init -c 127.0.0.1",
+              "    --cluster-init-username=Administrator",
+              "    --cluster-init-password=", { "Ref" : "RESTPassword" },
+              "    --cluster-init-ramsize=", { "Ref" : "RAMPerServer" },"\n",
+              "  if [ \"0\" != \"", { "Ref" : "RAMForDefaultBucket" }, "\" ]; then","\n",
+              "    /opt/couchbase/bin/couchbase-cli bucket-create -c 127.0.0.1",
+              "      -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "      --bucket=default",
+              "      --bucket-type=couchbase",
+              "      --bucket-password=",
+              "      --bucket-ramsize=", { "Ref" : "RAMForDefaultBucket" },
+              "      --bucket-replica=1","\n",
+              "  fi","\n",
+              
+            "fi","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterConfigure" }, "\"\n"
+            
+              ,
+              "curl -X PUT -H 'Content-Type:' --data-binary '{\"Status\" : \"SUCCESS\",",
+                                                             "\"Reason\" : \"ServerNode0 node is ready\",",
+                                                             "\"UniqueId\" : \"couchbase\",",
+                                                             "\"Data\" : \"Done\"}' ",
+                    "\"", {"Ref" : "WaitForServerNode0WaitHandle"}, "\"\n"
+            
+        ]]}}
+      }
+      
+    },
+   
+    "ServerNode1" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-1" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
+            "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/couchbase-cli server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/couchbase-cli server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterConfigure" }, "\"\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForServerNode0"
+      
+    },
+   
+    "ServerNode2" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-2" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
+            "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/couchbase-cli server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/couchbase-cli server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterConfigure" }, "\"\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForServerNode0"
+      
+    },
+   
+    "ServerNode3" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-3" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
+            "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/couchbase-cli server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/couchbase-cli server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterConfigure" }, "\"\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForServerNode0"
+      
+    },
+   
+    "ServerNode4" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-4" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
+            "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/couchbase-cli server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/couchbase-cli server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterConfigure" }, "\"\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForServerNode0"
+      
+    },
+   
+    "ServerNode5" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-5" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
+            "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/couchbase-cli server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/couchbase-cli server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterConfigure" }, "\"\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForServerNode0"
+      
+    },
+   
+    "ServerNode6" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-6" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
+            "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/couchbase-cli server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/couchbase-cli server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterConfigure" }, "\"\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForServerNode0"
+      
+    },
+   
+    "ServerNode7" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-7" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
+            "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/couchbase-cli server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/couchbase-cli server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterConfigure" }, "\"\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForServerNode0"
+      
+    },
+   
+    "ServerNode8" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-8" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
+            "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/couchbase-cli server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/couchbase-cli server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterConfigure" }, "\"\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForServerNode0"
+      
+    },
+   
+    "ServerNode9" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [ { "Ref" : "InstanceSecurityGroup" } ],
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            {
+              "Ref": "AWS::Region"
+            },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {
+                  "Ref": "InstanceType"
+                },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "Tags" : [ {
+            "Key" : "Name",
+            "Value" :  { "Fn::Join" : ["", [ { "Ref" : "AWS::StackName" }, "-9" ]]}
+          }, {
+            "Key" : "PackageURL",
+            "Value" : { "Ref" : "PackageURL" }
+          }, {
+            "Key" : "UserTag",
+            "Value" : { "Ref" : "UserTag" }
+          }
+        ],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+            "#!/bin/bash -ex","\n",
+            "yum -y install openssl098e","\n",
+            "wget ", { "Ref" : "PackageURL" },"\n",
+            "rpm -i couchbase-server-community*.rpm","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterInstall" }, "\"\n",
+            "sleep 5","\n",
+            
+              "if [ \"default\" != \"", { "Ref" : "NumVBuckets" }, "\" ]; then","\n",
+              "  wget https://raw.github.com/couchbaselabs/rampup/master/after-install","\n",
+              "  chmod a+x after-install","\n",
+              "  ./after-install ", { "Ref" : "NumVBuckets" },"\n",
+              "fi","\n",
+            
+            "if [ \"host:port\" != \"", { "Ref" : "ExistingClusterHostPort" }, "\" ]; then","\n",
+            "  echo Existing couchbase cluster...","\n",
+            "  /opt/couchbase/bin/couchbase-cli server-add",
+            "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+            "    -c ", { "Ref" : "ExistingClusterHostPort" },
+            "    --server-add=`hostname -i`:8091","\n",
+            "else","\n",
+            "  echo New couchbase cluster...","\n",
+              
+              "  /opt/couchbase/bin/couchbase-cli server-add",
+              "    -u Administrator -p ", { "Ref" : "RESTPassword" },
+              "    -c ", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] },
+              "    --server-add=`hostname -i`:8091","\n",
+              
+            "fi","\n",
+            "/bin/sh -c \"", { "Ref" : "AfterConfigure" }, "\"\n"
+            
+        ]]}}
+      }
+      
+        ,
+        "DependsOn" : "WaitForServerNode0"
+      
+    },
+   
+
+    "InstanceSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" :
+          "Enable SSH access via port 22, web access to 8091, membase/memcached protocol access to 11211 and 11210, and erlang access",
+        "SecurityGroupIngress" : [ {
+          "IpProtocol" : "tcp",
+          "FromPort" : "22",
+          "ToPort" : "22",
+          "CidrIp" : "0.0.0.0/0"
+        }, {
+          "IpProtocol" : "tcp",
+          "FromPort" : "8091",
+          "ToPort" : "8091",
+          "CidrIp" : "0.0.0.0/0"
+        }, {
+          "IpProtocol" : "tcp",
+          "FromPort" : "11211",
+          "ToPort" : "11211",
+          "CidrIp" : "0.0.0.0/0"
+        }, {
+          "IpProtocol" : "tcp",
+          "FromPort" : "11210",
+          "ToPort" : "11210",
+          "CidrIp" : "0.0.0.0/0"
+        }, {
+          "IpProtocol" : "tcp",
+          "FromPort" : "11209",
+          "ToPort" : "11209",
+          "CidrIp" : "0.0.0.0/0"
+        }, {
+          "IpProtocol" : "tcp",
+          "FromPort" : "4369",
+          "ToPort" : "4369",
+          "CidrIp" : "0.0.0.0/0"
+        }, {
+          "IpProtocol" : "tcp",
+          "FromPort" : "21100",
+          "ToPort" : "21299",
+          "CidrIp" : "0.0.0.0/0"
+        } ]
+      }
+    },
+
+    "WaitForServerNode0WaitHandle" : {
+      "Type" : "AWS::CloudFormation::WaitConditionHandle",
+      "Properties" : {
+      }
+    },
+
+    "WaitForServerNode0" : {
+      "Type" : "AWS::CloudFormation::WaitCondition",
+      "DependsOn" : "ServerNode0",
+      "Properties" : {
+        "Handle" : {"Ref" : "WaitForServerNode0WaitHandle"},
+        "Timeout" : "1200"
+      }
+    }
+  },
+
+  "Outputs" : {
+    "RESTWebConsoleURL" : {
+      "Description" : "The URL for the newly created couchbase node(s)",
+      "Value" : { "Fn::Join" : ["", [ "http://", { "Fn::GetAtt" : [ "ServerNode0", "PublicIp" ] }, ":8091" ]]}
+    }
+  }
+}
+
